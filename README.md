@@ -17,6 +17,7 @@
 - 判定者：`ctx.get('subagents').start('spawn', …)`，请求带 `toolFilter: { allow: [] }`（**强制无工具只读**），`outputSchema` 强制返回 `{verdict, reason, confidence}`。
 - 打回：`agent.inject(原因)` + `agent.steer(提示)`；同一用户问题默认最多打回 2 次，之后注入一行「已达上限，本轮放行」。`steer: false` 可降级为只注入。
 - 置信度门槛：只有 `drift` 且 `confidence ≥ 0.8` 才算偏离，缺 confidence 或低于门槛一律按 `pass`。
+- 每轮至多一次判定：按 turn 记账（`turn/start` 的 seq），同一 turn 重复触发的 `turn-stopping` 不再消耗判定调用。
 - 失败即放行：子代理缺失、超时、未完成、返回非法 → 一律 `pass`，绝不把正常回合搞挂。
 - 自我过滤：注入文本以 `[drift-gate]` 开头，下一轮定位用户问题时会跳过它。
 
@@ -76,7 +77,7 @@ dsh --profile web --dump-config | findstr drift-gate
 node --test
 ```
 
-21 个用例覆盖：问答抽取（忽略 reasoning/tool-call）、自我提醒过滤、无 `turn/start` 老日志、偏离注入、pass 静默、低置信与越界置信度降级、非法裁决降级并留痕、连续打回上限、子代理缺失/启动失败/超时降级、强制只读 `toolFilter`、`allowTools` 透传、`steer` 可关、开关关闭。
+23 个用例覆盖：问答抽取（忽略 reasoning/tool-call）、自我提醒过滤、无 `turn/start` 老日志、偏离注入、pass 静默、低置信与越界置信度降级、非法裁决降级并留痕、连续打回上限、每 turn 只判定一次、子代理缺失/启动失败/超时降级、强制只读 `toolFilter`、`allowTools` 透传、`steer` 可关、开关关闭。
 
 ## 限制
 

@@ -22,16 +22,27 @@
 
 ## 安装
 
-```sh
-dsh plugin --profile <name> add D:\projects\dsh-drift-gate
+desktop profile 由 Electron 独占管理，CLI 会拒绝：
+
+```text
+error: profile "desktop" is managed exclusively by the Electron application
 ```
 
-装完重启该 profile 的宿主（桌面端 / web），插件行随 profile 激活。
+因此分两条路：
+
+- **desktop**：桌面端「插件管理」添加本地插件，或手工改 profile，见 [DEPLOY.md](DEPLOY.md)（含备份与回滚）。
+- **web / 其它 profile**：
+
+```sh
+dsh plugin --profile web add D:\projects\dsh-drift-gate
+```
+
+装完重启该 profile 的宿主，插件行随 profile 激活。
 
 验证已加载：
 
 ```sh
-dsh --profile <name> --dump-config | findstr drift-gate
+dsh --profile web --dump-config | findstr drift-gate
 ```
 
 ## 配置
@@ -65,7 +76,7 @@ dsh --profile <name> --dump-config | findstr drift-gate
 node --test
 ```
 
-15 个用例覆盖：问答抽取（忽略 reasoning/tool-call）、自我提醒过滤、无 `turn/start` 老日志、偏离注入、pass 静默、连续打回上限、子代理缺失/失败/超时降级、开关关闭。
+21 个用例覆盖：问答抽取（忽略 reasoning/tool-call）、自我提醒过滤、无 `turn/start` 老日志、偏离注入、pass 静默、低置信与越界置信度降级、非法裁决降级并留痕、连续打回上限、子代理缺失/启动失败/超时降级、强制只读 `toolFilter`、`allowTools` 透传、`steer` 可关、开关关闭。
 
 ## 限制
 

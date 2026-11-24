@@ -92,6 +92,12 @@ test('normalizeVerdict 只接受高置信 drift,其余一律回落 pass', () => 
     '缺置信度不放行',
   )
   assert.equal(normalizeVerdict({ verdict: 'drift', reason: '   ', confidence: 0.9 }).verdict, 'pass')
+  assert.equal(normalizeVerdict({ verdict: 'drift', reason: 'x', confidence: 2 }).verdict, 'pass')
+  assert.equal(
+    normalizeVerdict({ verdict: 'drift', reason: 'x', confidence: Number.POSITIVE_INFINITY }).verdict,
+    'pass',
+  )
+  assert.equal(normalizeVerdict({ verdict: 'drift', reason: 'x', confidence: Number.NaN }).verdict, 'pass')
   assert.equal(normalizeVerdict({ verdict: 'PASS', confidence: 0.9 }).verdict, 'pass')
   assert.equal(normalizeVerdict(null).verdict, 'pass')
   assert.equal(normalizeVerdict('drift').verdict, 'pass')

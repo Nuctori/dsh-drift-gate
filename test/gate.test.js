@@ -93,14 +93,24 @@ test('未偏离时不注入任何东西', async () => {
   assert.equal(agent.steered.length, 0)
 })
 
-test('低置信或缺失置信度的 drift 一律放行', async () => {
+test('低置信或缺失置信度的 drift 一律放行,并各记一条 warn', async () => {
   for (const structured of [drift(0.5), { verdict: 'drift', reason: '可能是跑题' }]) {
     const agent = makeAgent(TURN)
-    const { ctx, handlers } = makeCtx({ structured })
+    const { ctx, handlers, warns } = makeCtx({ structured })
     apply(ctx)
     await fire(handlers, agent)
     assert.equal(agent.injected.length, 0, JSON.stringify(structured))
+    assert.equal(warns.length, 1, JSON.stringify(structured))
   }
+})
+
+test('非法结构化输出按 pass 放行并记一条 warn', async () => {
+  const agent = makeAgent(TURN)
+  const { ctx, handlers, warns } = makeCtx({ structured: { verdict: 'maybe', reason: '?' } })
+  apply(ctx)
+  await fire(handlers, agent)
+  assert.equal(agent.injected.length, 0)
+  assert.equal(warns.length, 1, '越界裁决要留痕,但不得打回')
 })
 
 test('同一问题反复偏离:两次后达上限并放行', async () => {

@@ -77,14 +77,22 @@ test('缺用户问题或缺助手文本时返回 null', () => {
   )
 })
 
-test('normalizeVerdict 只接受 drift,理由为空或未知形态一律回落 pass', () => {
-  assert.deepEqual(normalizeVerdict({ verdict: 'drift', reason: '答非所问' }), {
+test('normalizeVerdict 只接受高置信 drift,其余一律回落 pass', () => {
+  assert.deepEqual(normalizeVerdict({ verdict: 'drift', reason: '答非所问', confidence: 0.9 }), {
     verdict: 'drift',
     reason: '答非所问',
   })
-  assert.equal(normalizeVerdict({ verdict: 'drift', reason: '   ' }).verdict, 'pass')
-  assert.equal(normalizeVerdict({ verdict: 'PASS' }).verdict, 'pass')
-  assert.equal(normalizeVerdict({ verdict: 'drift' }).verdict, 'pass')
+  assert.equal(
+    normalizeVerdict({ verdict: 'drift', reason: '答非所问', confidence: 0.79 }).verdict,
+    'pass',
+  )
+  assert.equal(
+    normalizeVerdict({ verdict: 'drift', reason: '答非所问' }).verdict,
+    'pass',
+    '缺置信度不放行',
+  )
+  assert.equal(normalizeVerdict({ verdict: 'drift', reason: '   ', confidence: 0.9 }).verdict, 'pass')
+  assert.equal(normalizeVerdict({ verdict: 'PASS', confidence: 0.9 }).verdict, 'pass')
   assert.equal(normalizeVerdict(null).verdict, 'pass')
   assert.equal(normalizeVerdict('drift').verdict, 'pass')
 })
@@ -94,6 +102,7 @@ test('判定提示只含两段文本,并各自截断', () => {
   assert.ok(!prompt.includes('tool/call'))
   assert.ok(prompt.includes('用户需求'))
   assert.ok(prompt.includes('交付回答'))
+  assert.ok(prompt.includes('confidence'))
   assert.ok(prompt.length < 7000)
 })
 

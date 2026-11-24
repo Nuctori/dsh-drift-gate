@@ -1,0 +1,5 @@
+# dsh-drift-gate bundle patch: mounts one plugin row. Insert only — no preset,
+# no compaction, no UI overrides.
+- insert:
+    - id: drift-gate
+      name: 'dsh-drift-gate'

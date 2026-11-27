@@ -77,10 +77,11 @@ dsh --profile web --dump-config | findstr drift-gate
 node --test
 ```
 
-23 个用例覆盖：问答抽取（忽略 reasoning/tool-call）、自我提醒过滤、无 `turn/start` 老日志、偏离注入、pass 静默、低置信与越界置信度降级、非法裁决降级并留痕、连续打回上限、每 turn 只判定一次、子代理缺失/启动失败/超时降级、强制只读 `toolFilter`、`allowTools` 透传、`steer` 可关、开关关闭。
+用例覆盖：提示词契约、问答抽取（忽略 reasoning/tool-call）、自我提醒过滤、无 `turn/start` 老日志、偏离注入、pass 静默、低置信与越界置信度降级、非法裁决降级并留痕、连续打回上限、每 turn 只判定一次、子代理缺失/启动失败/超时降级、强制只读 `toolFilter`、`allowTools` 透传、`steer` 可关、开关关闭。
 
 ## 限制
 
-- 判定是语义判断，不是形式验证；提示词刻意偏保守（不确定就 pass）。
+- 只判断回答有没有偏离：漏掉明确的核心交付物、违反硬约束或换了任务才算漂移。只缺次要细节、证据不足，或如实说明具体阻塞，不因没做完就打回。
+- 不核验交付物或工具执行结果；`pass` 不证明工作已完成。
 - `agent/turn-stopping` 是建议性边界，不保证能阻止回合提交；这里的「打回」是让主 agent 继续工作，不是硬拦截。
 - 判定者用 `toolFilter: { allow: [] }` 强制无工具；若宿主拒绝空 allow，判定启动失败并按 `pass` 放行（可用 `allowTools` 显式放宽）。

@@ -112,6 +112,16 @@ test('判定提示只含两段文本,并各自截断', () => {
   assert.ok(prompt.length < 7000)
 })
 
+test('判定提示区分核心遗漏、次要缺漏和如实说明的阻塞', () => {
+  const prompt = judgePrompt({ userText: '比较 A/B 并给推荐', assistantText: '只比较 A/B' })
+  assert.match(prompt, /核心交付物.*硬约束.*普通偏好/)
+  assert.match(prompt, /完全漏掉.*核心交付物.*drift/)
+  assert.match(prompt, /次要细节.*pass/)
+  assert.match(prompt, /如实说明.*阻塞.*不.*自动判 drift/)
+  assert.match(prompt, /证据不足.*pass/)
+  assert.doesNotMatch(prompt, /只是不完整.*判 pass/)
+})
+
 test('打回次数按用户问题累计,达到上限后不再打回', () => {
   const book = createStrikeBook()
   const agent = {}
